@@ -1,0 +1,69 @@
+@startuml DSA Project Structure
+
+' Styling
+skinparam componentStyle rectangle
+skinparam backgroundColor white
+skinparam handwritten false
+
+' Main components
+package "Django Project" {
+    [manage.py] as manage
+    [utils.py] as utils
+    
+    package "Main App" {
+        [models.py] as main_models
+        [views.py] as main_views
+        [urls.py] as main_urls
+        [admin.py] as main_admin
+        [tests.py] as main_tests
+    }
+    
+    package "API App" {
+        [views.py] as api_views
+        [urls.py] as api_urls
+        [models.py] as api_models
+        [serializers.py] as api_serializers
+        [authentication.py] as api_auth
+        [pagination.py] as api_pagination
+        [tests.py] as api_tests
+    }
+    
+    package "Drone Reader" {
+        [drone_reader] as drone
+    }
+    
+    database "SQLite" {
+        [db.sqlite3] as db
+    }
+}
+
+' Relationships
+manage --> main_models
+manage --> main_views
+manage --> main_urls
+manage --> api_views
+manage --> api_urls
+
+main_models --> db
+api_models --> db
+
+main_views --> main_models
+api_views --> api_models
+api_views --> api_serializers
+api_views --> api_auth
+api_views --> api_pagination
+
+main_urls --> main_views
+api_urls --> api_views
+
+utils --> main_models
+utils --> api_models
+
+drone --> main_models
+drone --> api_models
+
+main_admin --> main_models
+main_tests --> main_models
+api_tests --> api_models
+
+@enduml 

@@ -1,0 +1,55 @@
+{% extends 'main/base_template.html' %}
+
+{% block content %}
+    <div class="basic-div login-div">
+        {% if user.is_authenticated %}
+            Вы уже выполнили вход на сайт
+            <a href="{% url 'main:index' %}">Перейти на главную страницу</a>
+        {% else %}
+            <form method="post">
+                {% csrf_token %}
+                <table>
+                    <tr>
+                        <td>
+                            Имя пользователя
+                        </td>
+                        <td>
+                            {{ form.username }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Пароль:
+                        </td>
+                        <td>
+                            {{ form.password }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td><input type="submit" value="Войти"></td>
+                    </tr>
+                </table>
+                <input type="hidden" name="next" value="{{ next }}">
+                <input type="hidden" id="user-token" name="user_token" value="">
+            </form>
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <p class="loginErrorField">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        let tokenField = document.getElementById("user-token");
+        let symbols = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
+        let token = []
+        for (let i = 0; i < 32; i++) token.push(symbols[Math.floor(Math.random() * symbols.length)]);
+        token = token.join("");
+        tokenField.value = token;
+        localStorage.setItem("user_token", token)
+    </script>
+{% endblock %}

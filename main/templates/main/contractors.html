@@ -1,0 +1,238 @@
+{% extends 'main/index.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="basic-div content-div"><strong>Справочник контрагентов</strong></div>
+    <div class="basic-div content-div" id="content-div">
+        <div class="operation-div">
+            <span class="span-button" id="create-button">Создать</span>
+            <input type="text" name="search-field" id="search-field" value="">
+            <span class="span-button" id="search-button">Найти</span>
+            <span class="span-button" id="clear-search-field-button">Очистить</span>
+        </div>
+        <table id="content-table" class="content-table">
+            <tr>
+                <th column-key="id" display-name="Номер">Номер</th>
+                <th column-key="title" display-name="Наименование">Наименование</th>
+                <th column-key="category" display-name="Категория">Категория</th>
+                <th column-key="dt_created" display-name="Дата создания">Дата создания</th>
+                <th column-key="dt_updated" display-name="Дата изменения">Дата изменения</th>
+                <th column-key="to_remove" display-name="Удл.">Удл.</th>
+            </tr>
+        </table>
+        <div class="navigation-div">
+            <span class="span-button" id="prev-page-button">Предыдущая страница</span>
+            <span class="span-button" id="next-page-button">Следующая страница</span>
+        </div>
+    </div>
+{% endblock %}
+
+{% block modals %}
+    <div class="modal" id="contractor-editor" style="display: none">
+        <div>
+            <div class="modal-control-buttons">
+                <span class="span-button" id="contractor-editor-close-button">X</span>
+            </div>
+            <div>
+                Номер: <span id="contractor-number"></span><br><br>
+                Дата создания: <span id="contractor-dt-created"></span><br><br>
+                Дата изменения: <span id="contractor-dt-updated"></span><br><br>
+                <fieldset>
+                    Наименование:<br><input type="text" name="contractor-title" id="contractor-title" value="" required><br><br>
+                    Категория:
+                    <select name="contractor-category" id="contractor-category"></select><br><br>
+                    Пометить на удаление: <input type="checkbox" name="contractor-to-remove" id="contractor-to-remove">
+                </fieldset>
+            </div>
+            <br>
+            <div class="modal-control-buttons">
+                <span class="span-button" id="contractor-editor-cancel-button">Отмена</span>
+                <span class="span-button" id="contractor-editor-save-button">Сохранить</span>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        const apiURL = "/api/contractors/";
+
+        const apiContractorCategoriesURL = "/api/contractor_categories/";
+        let contractorCategories = null;
+
+        function checkContractorFormData() {
+            if ($("#contractor-title").val().trim() === "") {
+                throw new Error("Наименование не может быть пустым!")
+            }
+        }
+
+        function showContractors(url) {
+            if (!contractorCategories) {
+                $.ajax(apiContractorCategoriesURL, {
+                    "method": "GET",
+                    "dataType": "json",
+                    "async": false,
+                    "success": function (data) {
+                        contractorCategories = data;
+                    }
+                })
+            }
+            $.ajax(url, {
+                "method": "GET",
+                "dataType": "json",
+                "success": function (data) {
+                    let contractors, nextPage, prevPage;
+                    if ("results" in data) {
+                        contractors = data.results;
+                        nextPage = data.next;
+                        prevPage = data.previous;
+                    } else {
+                        contractors = [data];
+                        nextPage = prevPage = null;
+                    }
+
+                    //Создаем таблицу со списком контрагентов
+                    let $contentTable = $("#content-table");
+                    $("tr:not(:first-child)", $contentTable).remove()
+                    let $tableRow = null;
+                    for (let contractor of contractors) {
+                        formatDates(contractor);
+                        $tableRow = $("<tr>");
+                        $tableRow.append($("<td>").text(contractor.id));
+                        $tableRow.append($("<td>").text(contractor.title));
+                        $tableRow.append($("<td>").text(contractorCategories[contractor.category]));
+                        $tableRow.append($("<td>").text(contractor.dt_created));
+                        $tableRow.append($("<td>").text(contractor.dt_updated));
+                        $tableRow.append($("<td>").text(contractor.to_remove ? "X" : "-"));
+                        $tableRow.data("contractor", contractor);
+                        $contentTable.append($tableRow);
+                    }
+                    $contentTable.on("click", "tr:not(:first-child)", contractorEdit);
+
+                    createPaginationButtons(prevPage, nextPage, showContractors);
+                },
+                "error": function (jqXHR) {
+                    showAjaxError(jqXHR, $("#contractor-editor"));
+                }
+            })
+        }
+
+        function contractorEdit() {
+            let selectedContractor = $.data(this, "contractor");
+
+            let $row = $(this);
+
+            showModal($("#contractor-editor"));
+            $("#contractor-number").text(selectedContractor.id);
+            $("#contractor-dt-created").text(selectedContractor.dt_created);
+            $("#contractor-dt-updated").text(selectedContractor.dt_updated);
+            $("#contractor-title").val(selectedContractor.title);
+            let categoriesList = [];
+            for (let [key, value] of Object.entries(contractorCategories)) {
+                categoriesList.push($("<option>").val(key).text(value));
+                if (key === selectedContractor.category) {
+                    categoriesList[categoriesList.length - 1].prop("selected", true);
+                }
+            }
+            $("#contractor-category").empty().append(...categoriesList);
+            $("#contractor-to-remove").prop("disabled", false);
+            $("#contractor-to-remove").prop("checked", selectedContractor.to_remove);
+
+            $("#contractor-editor-save-button").off().click(() => {
+                //Проверяем корректность внесения данных в форму
+                try {
+                    checkContractorFormData();
+                } catch (error) {
+                    alert(error.message);
+                    return;
+                }
+
+                let urlForRequest = `${apiURL}${selectedContractor.id}/`;
+                $.ajax(urlForRequest, {
+                    "method": "PATCH",
+                    "dataType": "json",
+                    "data": {
+                        "title": $("#contractor-title").val(),
+                        "category": $("#contractor-category").val(),
+                        "to_remove": $("#contractor-to-remove:checked").val() ? true : false
+                    },
+                    "success": function (data) {
+                        formatDates(data);
+
+                        $row.empty();
+                        $row.append($("<td>").text(data.id));
+                        $row.append($("<td>").text(data.title));
+                        $row.append($("<td>").text(contractorCategories[data.category]));
+                        $row.append($("<td>").text(data.dt_created));
+                        $row.append($("<td>").text(data.dt_updated));
+                        $row.append($("<td>").text(data.to_remove ? "X" : "-"));
+                        $row.data("contractor", data);
+
+                        closeModal($("#contractor-editor"));
+                    },
+                    "error": function (jqXHR) {
+                        showAjaxError(jqXHR, $("#contractor-editor"));
+                    }
+                })
+            })
+        }
+
+        function contractorCreate() {
+            showModal($("#contractor-editor"));
+
+            $("#contractor-number").text("-");
+            $("#contractor-dt-created").text("-");
+            $("#contractor-dt-updated").text("-");
+            $("#contractor-title").val("");
+            let categoriesList = [];
+            for (let [key, value] of Object.entries(contractorCategories)) {
+                categoriesList.push($("<option>").val(key).text(value));
+            }
+            categoriesList[0].prop("selected", true);
+            $("#contractor-category").empty().append(...categoriesList);
+            $("#contractor-to-remove").prop("disabled", true);
+            $("#contractor-to-remove").prop("checked", false);
+
+            $("#contractor-editor-save-button").off().click(() => {
+                try {
+                    checkContractorFormData();
+                } catch (error) {
+                    alert(error.message);
+                    return
+                }
+
+                $.ajax(apiURL, {
+                    "method": "POST",
+                    "dataType": "json",
+                    "data": {
+                        "title": $("#contractor-title").val(),
+                        "category": $("#contractor-category").val()
+                    },
+                    "success": function (data) {
+                        closeModal($("#contractor-editor"));
+                        $("#search-field").val(data.id);
+                        showContractors(`${apiURL}${data.id}`);
+                    },
+                    "error": function (jqXHR) {
+                        showAjaxError(jqXHR, $("#contractor-editor"));
+                    }
+                })
+            })
+        }
+
+        let contractorSearch = getSearchFunction(showContractors, getDefaultSearchParams, apiURL);
+
+        let contractorSort = getSortFunction(showContractors, getDefaultSearchParams, apiURL);
+
+        $("#clear-search-field-button").click(() => {
+            $("#search-field").val("");
+            contractorSearch();
+        });
+        $("#create-button").click(contractorCreate);
+        $("#search-button").click(contractorSearch);
+        $("#contractor-editor-close-button, #contractor-editor-cancel-button").click(() => closeModal($("#contractor-editor")));
+        $("#content-table th").click(contractorSort);
+
+        showContractors(apiURL);
+    </script>
+{% endblock %}

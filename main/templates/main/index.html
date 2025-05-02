@@ -1,0 +1,137 @@
+{% extends 'main/base_template.html' %}
+
+{% block message %}
+    <div class="modal" id="message-block" style="display: none">
+        <div>
+            <div class="modal-control-buttons">
+                <span class="span-button" id="message-block-close-button">X</span>
+            </div>
+            <div>
+                <p></p>
+            </div>
+            <div class="modal-control-buttons">
+                <span class="span-button" id="message-block-ok-button">Ок</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $("#message-block-close-button, #message-block-ok-button").click(() => {
+            closeModal($("#message-block"))
+        });
+    </script>
+{% endblock %}
+
+{% block menu %}
+    <div id="header">
+        <div class="basic-div">
+            <ul id="menu">
+                <li>
+                <span>
+                    {% if user.first_name or user.last_name %}
+                        {{ user.get_full_name }}
+                    {% else %}
+                        {{ user }}
+                    {% endif %}
+                </span>
+                    <ul>
+                        <li>
+                        <span>
+                            <a href="{% url 'logout' %}">Выйти</a>
+                        </span>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <span>Справочники</span>
+                    <ul>
+                        <li>
+                            <span>
+                                <a href="{% url 'main:products' %}">Товары</a>
+                            </span>
+                        </li>
+                        <li>
+                            <span>
+                                <a href="{% url 'main:contractors' %}">Контрагенты</a>
+                            </span>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <span>
+                        <a href="{% url 'main:documents' %}">Документы</a>
+                    </span>
+                </li>
+                <li>
+                    <span>Отчеты</span>
+                    <ul>
+                        <li>
+                            <span>
+                                <a href="{% url 'main:consolidated_report' %}">Сводный отчет по базе данных</a>
+                            </span>
+                        </li>
+                        <li>
+                            <span>
+                                <a href="{% url 'main:motion_report' %}?report_type=products">Отчет по движениям товаров</a>
+                            </span>
+                        </li>
+                        <li>
+                            <span>
+                                <a href="{% url 'main:motion_report' %}?report_type=contractors">Отчет по операциям с контрагентами</a>
+                            </span>
+                        </li>
+                        <li>
+                            <span>
+                                <a href="{% url 'main:products_to_xls' %}">Список товаров (XLS)</a>
+                            </span>
+                        </li>
+                        <li>
+                            <span>
+                                <a href="{% url 'main:contractors_to_xls' %}">Список контрагентов (XLS)</a>
+                            </span>
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <span>Сервис</span>
+                    <ul>
+                        {% if user.is_superuser %}
+                            <li>
+                                <span>
+                                    <a href="/admin/">Администрирование</a>
+                                </span>
+                            </li>
+                            <li>
+                                <span>
+                                    <a href="{% url 'main:remove_marked_objects' %}">Удаление помеченных объектов</a>
+                                </span>
+                            </li>
+                            <li>
+                                <span>
+                                    <a href="{% url 'main:import_products' %}">Импорт товаров</a>
+                                </span>
+                            </li>
+                            <li>
+                                <span>
+                                    <a href="{% url 'main:storage_items' %}">Управление остатками</a>
+                                </span>
+                            </li>
+                        {% else %}
+                            <li>
+                                <span>
+                                    <a href="{% url 'main:storage_items' %}">Просмотр остатков</a>
+                                </span>
+                            </li>
+                        {% endif %}
+                        <li>
+                            <span>
+                                <a href="{% url 'main:operations' %}">Журнал операций</a>
+                            </span>
+                        </li>
+                    </ul>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,27 @@
+.login-div {
+    width: 450px;
+    margin: 200px auto;
+    background-color: RGB(240, 248, 255); /* AliceBlue */
+    border: 1px solid RGB(176, 196, 222); /* LightSteelBlue */
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.login-div table{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.login-div table td {
+    padding: 5px;
+}
+
+.loginErrorField {
+    color: red;
+    width: 70%;
+    margin: 5px auto;
+    background-color: RGB(255, 240, 240); /* Светло-красный для ошибок */
+    border: 1px solid RGB(255, 200, 200);
+    border-radius: 4px;
+    padding: 5px;
+}

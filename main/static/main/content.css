@@ -1,0 +1,52 @@
+.content-div {
+    position: relative;
+    top: 95px;
+}
+
+.operation-div {
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.navigation-div {
+    display: flex;
+    justify-content: center
+}
+
+.content-table {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.content-table th {
+    background: RGB(70, 130, 180); /* SteelBlue */
+    color: white;
+    height: 30px;
+    text-align: center;
+    padding: 5px 5px 10px 10px;
+}
+
+.content-table tr:nth-child(even) {
+    background: RGB(230, 240, 255); /* Очень светлый голубой */
+}
+
+.content-table tr:nth-child(odd) {
+    background: RGB(240, 248, 255); /* AliceBlue */
+}
+
+.content-table tr:hover {
+    background: RGB(176, 196, 222); /* LightSteelBlue */
+    cursor: pointer;
+}
+
+.content-table td {
+    padding: 5px 5px 10px 10px;
+}
+
+p.report-block {
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid RGB(176, 196, 222); /* LightSteelBlue */
+    background-color: RGB(240, 248, 255); /* AliceBlue */
+}

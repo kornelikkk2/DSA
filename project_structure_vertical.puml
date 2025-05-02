@@ -1,0 +1,117 @@
+@startuml
+!theme plain
+skinparam componentStyle rectangle
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam component {
+    BackgroundColor LightBlue
+    BorderColor DarkBlue
+    ArrowColor DarkBlue
+}
+
+title DSA (Django Storage Application) - Vertical Architecture
+
+package "Frontend Layer" {
+    [Django Templates] as templates
+    [Static Files] as static
+    [jQuery UI] as jquery
+    [CSS Styles] as css
+}
+
+package "Main Application" {
+    [Django Views] as views
+    [URL Routing] as urls
+    [Authentication] as auth
+    [Admin Interface] as admin
+}
+
+package "API Layer" {
+    [REST Endpoints] as api
+    [Serializers] as serializers
+    [Token Auth] as token_auth
+    [Pagination] as pagination
+}
+
+package "Business Logic" {
+    [Models] as models
+    [Document Processing] as doc_proc
+    [Storage Management] as storage_mgmt
+    [QR Processing] as qr_proc
+}
+
+package "Data Layer" {
+    [SQLite Database] as db
+    [File Storage] as file_storage
+}
+
+package "Utils" {
+    [Document Utils] as doc_utils
+    [Export Utils] as export_utils
+    [File Operations] as file_ops
+}
+
+' Frontend connections
+templates --> jquery
+templates --> css
+static --> css
+static --> jquery
+
+' Main Application connections
+views --> templates
+views --> auth
+views --> models
+admin --> models
+urls --> views
+
+' API Layer connections
+api --> serializers
+api --> token_auth
+api --> pagination
+api --> models
+
+' Business Logic connections
+models --> db
+doc_proc --> models
+storage_mgmt --> models
+qr_proc --> models
+
+' Data Layer connections
+db --> file_storage
+models --> file_storage
+
+' Utils connections
+doc_utils --> doc_proc
+export_utils --> models
+file_ops --> file_storage
+
+' Cross-layer connections
+views --> api
+api --> doc_proc
+api --> storage_mgmt
+api --> qr_proc
+
+note right of templates
+  Django Template System
+  - HTML шаблоны
+  - Наследование шаблонов
+  - Контекстные данные
+end note
+
+note right of models
+  Django Models
+  - Product
+  - Contractor
+  - Document
+  - StorageItem
+  - Operation
+end note
+
+note right of api
+  Django REST Framework
+  - API endpoints
+  - Сериализация
+  - Аутентификация
+end note
+
+@enduml 

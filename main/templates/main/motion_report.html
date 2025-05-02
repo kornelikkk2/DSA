@@ -1,0 +1,216 @@
+{% extends 'main/index.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="basic-div content-div"><strong>Отчет по движению товаров</strong></div>
+    <div class="basic-div content-div" id="content-div">
+        <div class="operation-div">
+            <span class="span-button" id="show-filters-button">Показать фильтры</span>
+            <span class="span-button" id="generate-report-button">Сформировать</span>
+        </div>
+        <div class="operation-div" id="filters-div" style="display: none">
+            <p>
+                От: <input type="date" name="dt-start" id="dt-start">
+                До: <input type="date" name="dt-end" id="dt-end">
+            </p>
+            Номер/наименование: <input type="text" name="search-field" id="search-field">
+            <p>
+                <span class="span-button" id="clear-params-button">Очистить фильтры</span>
+            </p>
+            <input type="hidden" name="report_type" id="report_type" value="{{ report_type }}">
+        </div>
+        <table class="content-table" id="content-table">
+            <tr>
+                <th rowspan="2" class="sorted-column" column-key="id" display-name="Номер">Номер</th>
+                <th rowspan="2" class="sorted-column" column-key="title" display-name="Наименование">Наименование</th>
+                <th colspan="2">Приход</th>
+                <th colspan="2">Расход</th>
+            </tr>
+            <tr>
+                <th class="sorted-column" column-key="receipt_count" display-name="Штук">Штук</th>
+                <th class="sorted-column" column-key="receipt_sum" display-name="На сумму">На сумму</th>
+                <th class="sorted-column" column-key="expense_count" display-name="Штук">Штук</th>
+                <th class="sorted-column" column-key="expense_sum" display-name="На сумму">На сумму</th>
+            </tr>
+        </table>
+        <div class="navigation-div" id="navigation-div" style="display: none">
+            <span class="span-button" id="prev-page-button">Предыдущая страница</span>
+            <span class="span-button" id="next-page-button">Следующая страница</span>
+        </div>
+    </div>
+{% endblock %}
+
+{% block modals %}
+    <div class="modal" id="report-details-modal" style="display: none">
+        <div style="width: 700px; max-height: 600px; overflow: scroll">
+            <div class="modal-control-buttons">
+                <span class="span-button" id="modal-close-button">X</span>
+            </div>
+            <p id="report-details-element-title"></p>
+            <table class="content-table" id="report-details-content-table">
+                <tr>
+                    <th rowspan="2">Номер</th>
+                    <th rowspan="2">Наименование</th>
+                    <th colspan="2">Приход</th>
+                    <th colspan="2">Расход</th>
+                </tr>
+                <tr>
+                    <th>Штук</th>
+                    <th>На сумму</th>
+                    <th>Штук</th>
+                    <th>На сумму</th>
+                </tr>
+            </table>
+        </div>
+    </div>
+{% endblock modals %}
+
+{% block scripts %}
+    <script>
+        const apiProductsReportURL = "/api/motion_report/";
+
+        function getSearchParams() {
+            return $.param({
+                "report_type": $("#report_type").val(),
+                "dt_start": $("#dt-start").val(),
+                "dt_end": $("#dt-end").val(),
+                "search": $("#search-field").val()
+            });
+        }
+
+        function showReport(url) {
+            $.ajax(url, {
+                "method": "GET",
+                "dataType": "json",
+                "success": function (data) {
+                    let $contentTable = $("#content-table");
+                    $("tr", $contentTable).slice(2).remove();
+
+                    let reportData, nextPage, prevPage, totals;
+                    reportData = data.results;
+                    nextPage = data.next;
+                    prevPage = data.previous;
+                    totals = data.totals;
+
+                    let $row = $("<tr>");
+                    $row.append($("<th>"));
+                    $row.append($("<th>").text("ИТОГО:"));
+                    $row.append($("<th>").text(totals.total_receipt_count));
+                    $row.append($("<th>").text(totals.total_receipt_sum));
+                    $row.append($("<th>").text(totals.total_expense_count));
+                    $row.append($("<th>").text(totals.total_expense_sum));
+                    $contentTable.append($row);
+
+                    for (let element of reportData) {
+                        $row = $("<tr>");
+                        $row.append($("<td>").text(element.id));
+                        $row.append($("<td>").text(element.title));
+                        $row.append($("<td>").text(element.receipt_count));
+                        $row.append($("<td>").text(element.receipt_sum));
+                        $row.append($("<td>").text(element.expense_count));
+                        $row.append($("<td>").text(element.expense_sum));
+                        $row.data("element", element);
+                        $row.click(showSubReport);
+                        $contentTable.append($row);
+                    }
+
+                    if (nextPage || prevPage) {
+                        $("#navigation-div").show();
+                    } else {
+                        $("#navigation-div").hide();
+                    }
+                    createPaginationButtons(prevPage, nextPage, showReport);
+                },
+                "error": function (jqXHR) {
+                    showAjaxError(jqXHR);
+                }
+            });
+        }
+
+        function showSubReport() {
+            let element = $(this).data("element");
+
+            let dtStart = $("#dt-start").val();
+            let dtEnd = $("#dt-end").val();
+            let currentReportType = $("#report_type").val();
+            let queryParams;
+            if (currentReportType === "products") {
+                queryParams = $.param({
+                    "report_type": "contractors",
+                    "product": element.id,
+                    "dt_start": dtStart,
+                    "dt_end": dtEnd
+                });
+            }
+            if (currentReportType === "contractors") {
+                queryParams = $.param({
+                    "report_type": "products",
+                    "contractor": element.id,
+                    "dt_start": dtStart,
+                    "dt_end": dtEnd
+                });
+            }
+
+            $.ajax(apiProductsReportURL, {
+                "method": "GET",
+                "dataType": "json",
+                "data": queryParams,
+                "success": function (data) {
+                    showModal($("#report-details-modal"));
+
+                    $("#report-details-element-title").text(element.title)
+
+                    let $contentTable = $("#report-details-content-table");
+                    $("tr", $contentTable).slice(2).remove();
+
+                    let $row;
+                    for (let dataElement of data.results) {
+                        $row = $("<tr>");
+                        $row.append($("<td>").text(dataElement.id));
+                        $row.append($("<td>").text(dataElement.title));
+                        $row.append($("<td>").text(dataElement.receipt_count));
+                        $row.append($("<td>").text(dataElement.receipt_sum));
+                        $row.append($("<td>").text(dataElement.expense_count));
+                        $row.append($("<td>").text(dataElement.expense_sum));
+                        $contentTable.append($row);
+                    }
+                },
+                "error": function (jqXHR) {
+                    showAjaxError(jqXHR);
+                }
+            })
+        }
+
+        let sortFunction = getSortFunction(showReport, getSearchParams, apiProductsReportURL);
+
+        $("#generate-report-button").click(() => {
+            if (orderColumn) {
+                orderColumn.column.text(orderColumn.column.attr("display-name"));
+                orderColumn = null;
+            }
+            showReport(`${apiProductsReportURL}?${getSearchParams()}`);
+        });
+
+        $("#content-table th[column-key]").click(sortFunction);
+
+        $("#show-filters-button").click(function () {
+            let $this = $(this);
+            let $filtersDiv = $("#filters-div");
+            $filtersDiv.slideToggle("normal");
+            if ($this.text() === "Показать фильтры") {
+                $this.text("Скрыть фильтры");
+            } else {
+                $this.text("Показать фильтры");
+            }
+        });
+
+        $("#clear-params-button").click(() => {
+            $("#dt-start, #dt-end, #search-field").val("");
+        });
+
+        $("#modal-close-button").click(() => {
+            closeModal($("#report-details-modal"));
+        });
+
+    </script>
+{% endblock scripts %}

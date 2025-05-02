@@ -1,0 +1,40 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'main/fonts.css' %}">
+    <link rel="stylesheet" href="{% static 'main/base.css' %}">
+    <link rel="stylesheet" href="{% static 'main/menu.css' %}">
+    <link rel="stylesheet" href="{% static 'main/buttons.css' %}">
+    <link rel="stylesheet" href="{% static 'main/modals.css' %}">
+    <link rel="stylesheet" href="{% static 'main/inputs.css' %}">
+    <link rel="stylesheet" href="{% static 'main/content.css' %}">
+    <link rel="stylesheet" href="{% static 'main/login.css' %}">
+    <link rel="stylesheet" href="{% static 'main/search_elements.css' %}">
+    <script src="{% static 'main/jquery-3.5.1.js' %}"></script>
+    <script src="{% static 'main/common.js' %}"></script>
+    <title>DSA</title>
+</head>
+<body>
+
+{% block message %}
+{% endblock %}
+
+{% block menu %}
+{% endblock %}
+
+{% block content %}
+{% endblock %}
+
+{% block modals %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+</body>
+</html>

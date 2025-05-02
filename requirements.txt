@@ -1,0 +1,11 @@
+asgiref==3.2.10
+Django==3.1
+djangorestframework==3.11.1
+et-xmlfile==1.0.1
+jdcal==1.4.1
+openpyxl==3.0.5
+pytz==2020.1
+sqlparse==0.3.1
+opencv-python==4.8.0
+numpy==1.24.3
+requests==2.31.0
