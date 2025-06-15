@@ -1,4 +1,6 @@
-РЕФЕРАТ
+#ВЫПУСКНАЯ КВАЛИФИКАЦИОННАЯ РАБОТА БАКАЛАВРА
+
+#РЕФЕРАТ
 Выпускная квалификационная работа содержит 44 страницы, 15 рисунков, 2 таблицы, 24 источника, 4 приложения.
 ДРОН, ИНВЕНТАРИЗАЦИЯ, СКЛАД, КОМПЬЮТЕРНОЕ ЗРЕНИЕ, OPENCV, ARUCO-МАРКЕРЫ, QR-КОД, ROS, PX4, DJANGO, АВТОМАТИЗАЦИЯ
 Предмет исследования – технические и программные средства сбора и обработки данных с дрона для автоматического учета товарных запасов.
@@ -9,7 +11,7 @@
 Разработанная система может быть успешно внедрена на складах малого и среднего бизнеса, а также адаптирована под крупные логистические комплексы.
 Область применения: автоматизация складской логистики, инвентаризация, робототехнические системы учёта и управления запасами.
  
-ABSTRACT
+#ABSTRACT
 The final thesis contains 44 pages, 15 figures, 2 tables, 24 sources, 4 appendices.
 DRONE, INVENTORY, WAREHOUSE, COMPUTER VISION, OPENCV, ARUCO MARKERS, QR CODE, ROS, PX4, DJANGO, AUTOMATION
 The subject of the research is technical and software tools for collecting and processing data from a drone for automatic inventory accounting.
